@@ -11,7 +11,7 @@
 <body>
 <header>
     <button class="back-btn hidden" onclick="goBack()">返回</button>
-    <span id="header-title">🌸 织女的一天 🌸</span>
+    <span id="header-title">🌸 织女生活 🌸</span>
 </header>
 <div class="main">
     <!-- 作品列表页 -->
@@ -41,8 +41,8 @@
                 <option value="start-asc">开始时间 ↑</option>
                 <option value="start-desc">开始时间 ↓</option>
             </select>
-            <button id="add-btn" class="control-btn" onclick="addWork()">+ 添加作品</button>
-            <button id="export-excel-btn" class="control-btn" onclick="exportWorksExcel()">导出Excel</button>
+            <button id="add-btn" class="control-btn" onclick="addWork()">+</button>
+            <button id="export-excel-btn" class="control-btn" onclick="exportWorksExcel()">导出</button>
         </div>
 
         <!-- 网格容器 -->
@@ -54,7 +54,7 @@
         <form id="work-form">
             <div class="card">
                 <div id="export-btn-container">
-                    <button type="button" id="export-pdf-btn" class="hidden" onclick="exportPDF()">导出PDF</button>
+                    <button type="button" id="export-pdf-btn" class="hidden" onclick="exportPDF()">导出</button>
                 </div>
                 <label>图片：</label>
                 <div id="file-input-container">
@@ -324,7 +324,7 @@ function addWork(){
     document.getElementById('work-list-page').classList.add('hidden');
     document.getElementById('work-detail-page').classList.remove('hidden');
     document.querySelector('.back-btn').classList.remove('hidden');
-    document.getElementById('header-title').innerText='添加作品';
+    document.getElementById('header-title').innerText='添加';
     document.getElementById('detail-created').value = new Date().toISOString().split('T')[0];
 }
 
@@ -576,3 +576,4 @@ syncStatusAndProgress();
 </script>
 </body>
 </html>
+
