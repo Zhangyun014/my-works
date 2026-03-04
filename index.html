@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>织女生活</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+    <button class="back-btn hidden" onclick="goBack()">返回</button>
+    <span id="header-title">🌸 织女的一天 🌸</span>
+</header>
+<div class="main">
+    <!-- 作品列表页 -->
+    <div id="work-list-page">
+        <!-- 统计数据大卡片 -->
+        <div class="card" id="stats-card">
+            <div class="stat-row">
+                <div class="stat-item"><div class="label">作品数量(个)</div><div class="value" id="stat-count">0</div></div>
+                <div class="stat-item"><div class="label">总成本(元)</div><div class="value" id="stat-cost">0.00</div></div>
+                <div class="stat-item"><div class="label">进行中(个)</div><div class="value" id="stat-progress">0</div></div>
+                <div class="stat-item"><div class="label">已完成(个)</div><div class="value" id="stat-done">0</div></div>
+            </div>
+        </div>
+        <!-- 顶部控制栏 -->
+        <div id="control-bar">
+            <input type="text" id="search-input" placeholder="搜索作品名称...">
+            <select id="status-filter" class="control-select">
+                <option value="all">全部状态</option>
+                <option value="0">未开始</option>
+                <option value="50">进行中</option>
+                <option value="100">已完成</option>
+            </select>
+            <select id="tag-filter" class="control-select"><option value="all">全部标签</option></select>
+            <select id="sort-filter" class="control-select">
+                <option value="default">默认排序</option>
+                <option value="start-asc">开始时间 ↑</option>
+                <option value="start-desc">开始时间 ↓</option>
+            </select>
+            <button id="add-btn" class="control-btn" onclick="addWork()">+ 添加作品</button>
+            <button id="export-excel-btn" class="control-btn" onclick="exportWorksExcel()">导出Excel</button>
+        </div>
+        <!-- 网格容器 -->
+        <div id="work-grid"></div>
+    </div>
+    <!-- 作品详情/编辑页 -->
+    <div id="work-detail-page" class="hidden">
+        <form id="work-form">
+            <div class="card">
+                <div id="export-btn-container">
+                    <button type="button" id="export-pdf-btn" class="hidden" onclick="exportPDF()">导出PDF</button>
+                </div>
+                <label>图片：</label>
+                <div id="file-input-container">
+                    <input type="file" accept="image/*" onchange="previewImg(event,'detail-img')">
+                </div>
+                <img id="detail-img" class="hidden">
+                <div id="delete-img-btn-container">
+                    <button type="button" id="delete-img-btn" onclick="deleteImage()">删除图片</button>
+                </div>
+                <label>名称：</label>
+                <input type="text" id="detail-name" required>
+                <label>标签：</label>
+                <input type="text" id="detail-tags" placeholder="多个标签用英文逗号分隔，如：毛衣,冬季,手工">
+                <label>投入时间（天）：</label>
+                <input type="number" id="detail-time" min="0" step="0.1">
+                <label>线材名称：</label>
+                <input type="text" id="detail-fiber-name">
+                <label>线材成本（元）：</label>
+                <input type="text" id="detail-fiber-cost">
+                <label>线材消耗（g）：</label>
+                <input type="number" id="detail-fiber-weight" min="0" step="0.1">
+            </div>
+            <div class="card">
+                <h3>状态信息</h3>
+                <label>状态：</label>
+                <select id="detail-status">
+                    <option value="0">未开始</option>
+                    <option value="50">进行中</option>
+                    <option value="100">已完成</option>
+                </select>
+                <label>进度（%）：</label>
+                <input type="number" id="detail-progress" min="0" max="100" placeholder="0-100">
+                <label>创建时间：</label>
+                <input type="date" id="detail-created" disabled>
+                <label>开始时间：</label>
+                <input type="date" id="detail-start">
+                <label>完成时间：</label>
+                <input type="date" id="detail-finish">
+            </div>
+            <div class="card">
+                <h3>其他信息</h3>
+                <label>用针：</label>
+                <input type="text" id="detail-needle">
+                <label>横向密度：</label>
+                <input type="number" id="detail-density-x" step="0.01">
+                <label>纵向密度：</label>
+                <input type="number" id="detail-density-y" step="0.01">
+                <label>备注：</label>
+                <textarea id="detail-remark"></textarea>
+            </div>
+            <input type="submit" value="保存">
+        </form>
+    </div>
+    <!-- 工具页 -->
+    <div id="tool-page" class="hidden">
+        <div class="card"><h3>小样密度计算工具</h3>
+            <label>小样宽度（cm）：</label><input type="number" id="sample-width" value="10" step="0.1">
+            <label>小样高度（cm）：</label><input type="number" id="sample-height" value="10" step="0.1">
+            <label>小样针数：</label><input type="number" id="sample-stitches">
+            <label>小样行数：</label><input type="number" id="sample-rows">
+        </div>
+        <div class="card"><h3>目标尺寸（可选）</h3>
+            <label>织片宽度（cm）：</label><input type="number" id="target-width" step="0.1">
+            <label>织片高度（cm）：</label><input type="number" id="target-height" step="0.1">
+        </div>
+        <button onclick="calcDensity()">计算</button>
+        <div class="card" id="result-card" style="display:none;">
+            <h3>计算结果</h3>
+            <div>横向密度：<span id="result-density-x"></span> 针/10cm</div>
+            <div>纵向密度：<span id="result-density-y"></span> 行/10cm</div>
+            <div>所需针数：<span id="result-stitches"></span> 针</div>
+            <div>所需行数：<span id="result-rows"></span> 行</div>
+            <p style="font-size:12px;color:#555;margin-top:8px;">
+                说明：<br>
+                1) 先织小样并测量:记录10cm内的针/行数，或填入小样的宽高与针行数。<br>
+                2) 计算目标尺寸:输入所需宽/高，得到起针数与行数。<br>
+                提示：编织力度、线材弹性、针型都会影响密度，正式编织时保持力度一致。<br>
+                以及别忘了考虑水洗后的缩水情况。
+            </p>
+        </div>
+    </div>
+</div>
+<div class="tab-bar">
+    <button class="active" onclick="switchTab('work')">作品</button>
+    <button onclick="switchTab('tool')">工具</button>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+/* ==================== 数据存储 ==================== */
+let works = JSON.parse(localStorage.getItem('works')||'[]');
+let currentWorkId = null;
+let isViewMode = false; // 是否为查看模式（只读）
+let currentImageData = ''; // 全局变量存储当前图片的 Base64 数据
+
+/* ==================== 页面切换 ==================== */
+function switchTab(tab){
+    document.querySelectorAll('.tab-bar button').forEach(btn=>btn.classList.remove('active'));
+    if(tab==='work'){
+        document.querySelector('.tab-bar button:nth-child(1)').classList.add('active');
+        document.getElementById('work-list-page').classList.remove('hidden');
+        document.getElementById('tool-page').classList.add('hidden');
+        document.getElementById('header-title').innerText='织女的一天';
+    } else {
+        document.querySelector('.tab-bar button:nth-child(2)').classList.add('active');
+        document.getElementById('work-list-page').classList.add('hidden');
+        document.getElementById('tool-page').classList.remove('hidden');
+        document.getElementById('work-detail-page').classList.add('hidden');
+        document.getElementById('header-title').innerText='工具';
+    }
+    document.querySelector('.back-btn').classList.add('hidden');
+}
+
+/* ==================== 返回按钮 ==================== */
+function goBack(){
+    document.getElementById('work-detail-page').classList.add('hidden');
+    document.getElementById('work-list-page').classList.remove('hidden');
+    document.querySelector('.back-btn').classList.add('hidden');
+    document.getElementById('header-title').innerText='织女的一天';
+}
+
+/* ==================== 表单状态控制 ==================== */
+// 禁用所有输入（只读模式）
+function disableFormInputs(){
+    const inputs = document.querySelectorAll('#work-form input, #work-form select, #work-form textarea');
+    inputs.forEach(inp => inp.disabled = true);
+    document.querySelector('#work-form input[type="submit"]').style.display = 'none';
+}
+// 启用所有输入（编辑/新增模式）
+function enableFormInputs(){
+    const inputs = document.querySelectorAll('#work-form input, #work-form select, #work-form textarea');
+    inputs.forEach(inp => inp.disabled = false);
+    document.querySelector('#work-form input[type="submit"]').style.display = 'block';
+}
+
+// 切换文件输入和删除按钮的显示状态
+function toggleFileInputVisibility(){
+    if(isViewMode){
+        document.getElementById('file-input-container').style.display = 'none';
+        document.getElementById('delete-img-btn-container').style.display = 'none';
+    } else {
+        document.getElementById('file-input-container').style.display = 'block';
+        document.getElementById('delete-img-btn-container').style.display = 
+            document.getElementById('detail-img').src ? 'block' : 'none';
+    }
+}
+
+/* ==================== 作品列表 ==================== */
+function renderWorks(){
+    const container = document.getElementById('work-grid');
+    container.innerHTML = '';
+    
+    // 过滤逻辑
+    const keyword = document.getElementById('search-input').value.toLowerCase();
+    const statusFilter = document.getElementById('status-filter').value;
+    const tagFilter = document.getElementById('tag-filter').value;
+    
+    const filtered = works.filter(w=>{
+        const matchesKeyword = w.name?.toLowerCase()?.includes(keyword);
+        const matchesStatus = statusFilter==='all' || String(w.status)===statusFilter;
+        const matchesTag = tagFilter==='all' || (w.tags && w.tags.includes(tagFilter));
+        return matchesKeyword && matchesStatus && matchesTag;
+    });
+
+    // ==================== 排序逻辑 ====================
+    // 获取排序方式
+    const sortMode = document.getElementById('sort-filter').value;
+
+    // 根据选择的排序方式对 filtered 数组进行排序
+    if(sortMode === 'start-asc'){
+        filtered.sort((a, b) => {
+            // 将未设置开始时间的作品放在最后
+            if(!a.start) return 1;
+            if(!b.start) return -1;
+            return new Date(a.start) - new Date(b.start);
+        });
+    } else if(sortMode === 'start-desc'){
+        filtered.sort((a, b) => {
+            if(!a.start) return 1;
+            if(!b.start) return -1;
+            return new Date(b.start) - new Date(a.start);
+        });
+    }
+
+    // 统计数据
+    const totalCost = filtered.reduce((s,w)=>s+parseFloat(w.fiber?.cost||0),0);
+    const inProgress = filtered.filter(w=>w.status===50).length;
+    const completed = filtered.filter(w=>w.status===100).length;
+    document.getElementById('stat-count').innerText = filtered.length;
+    document.getElementById('stat-cost').innerText = totalCost.toFixed(2);
+    document.getElementById('stat-progress').innerText = inProgress;
+    document.getElementById('stat-done').innerText = completed;
+    document.getElementById('sort-filter').onchange = renderWorks;
+
+    
+    // 渲染卡片
+    filtered.forEach(w=>{
+        const card = document.createElement('div');
+        card.className = 'work-card';
+        const statusMap = {0:'未开始',50:'进行中',100:'已完成'};
+        
+        const imgWrapper = document.createElement('div');
+        imgWrapper.className = 'image-wrapper';
+        if(w.img){
+            const img = document.createElement('img');
+            img.src = w.img;
+            img.alt = '作品图';
+            imgWrapper.appendChild(img);
+        } else {
+           imgWrapper.classList.add('no-image'); 
+            imgWrapper.innerText = '暂无图片';
+        }
+        
+        const info = document.createElement('div');
+        info.className = 'info';
+        info.innerHTML = `
+            <strong>${w.name||'未命名'}</strong>
+            <small>状态: ${statusMap[w.status] || '未知'}</small>
+            <div class="progress-bar"><div style="width:${w.progress || 0}%"></div></div>
+            <small>投入时间: ${w.time || 0} 天</small>
+            <div class="button-row">
+                <button class="edit-btn" onclick="event.stopPropagation();editWork(${w.id})">编辑</button>
+                <button class="delete-btn" onclick="event.stopPropagation();confirmDelete(${w.id})">删除</button>
+            </div>
+        `;
+        
+        card.appendChild(imgWrapper);
+        card.appendChild(info);
+        card.onclick = (e)=>{ 
+            if(e.target.tagName.toLowerCase()!=='button'){
+                viewWork(w.id);
+            }
+        };
+        container.appendChild(card);
+    });
+    
+    // 更新标签筛选框
+    const tagSelect = document.getElementById('tag-filter');
+    const allTags = new Set();
+    works.forEach(w=>{ if(w.tags){ w.tags.forEach(t=>allTags.add(t)); } });
+    const currentTag = tagSelect.value;
+    tagSelect.innerHTML = '<option value="all">全部标签</option>';
+    Array.from(allTags).sort().forEach(tag=>{
+        const opt = document.createElement('option');
+        opt.value = tag;
+        opt.innerText = tag;
+        if(tag===currentTag) opt.selected = true;
+        tagSelect.appendChild(opt);
+    });
+}
+
+/* ==================== 删除作品 ==================== */
+function confirmDelete(id){
+    if(confirm('确定要删除此作品吗？此操作不可恢复。')){
+        works = works.filter(w=>w.id!==id);
+        localStorage.setItem('works',JSON.stringify(works));
+        renderWorks();
+    }
+}
+
+/* ==================== 添加作品 ==================== */
+function addWork(){
+    currentWorkId = null;
+    isViewMode = false;
+    document.getElementById('work-form').reset();
+    resetImagePreview();
+    enableFormInputs();
+    toggleFileInputVisibility();
+    document.getElementById('work-list-page').classList.add('hidden');
+    document.getElementById('work-detail-page').classList.remove('hidden');
+    document.querySelector('.back-btn').classList.remove('hidden');
+    document.getElementById('header-title').innerText='添加作品';
+    document.getElementById('detail-created').value = new Date().toISOString().split('T')[0];
+}
+
+/* ==================== 查看/编辑作品 ==================== */
+function viewWork(id){
+    isViewMode = true;
+    openDetail(id);
+}
+function editWork(id){
+    isViewMode = false;
+    openDetail(id);
+}
+function openDetail(id){
+    currentWorkId = id;
+    const w = works.find(x=>x.id===id);
+    if(!w) return;
+    
+    // 加载图片
+    if(w.img){
+        document.getElementById('detail-img').src = w.img;
+        document.getElementById('detail-img').style.display = 'block';
+        document.getElementById('delete-img-btn').style.display = 'block';
+        currentImageData = w.img; // 确保编辑时保留原图
+    } else {
+        resetImagePreview();
+    }
+    
+    // 加载其他信息
+    document.getElementById('detail-name').value = w.name||'';
+    document.getElementById('detail-time').value = w.time||'';
+    document.getElementById('detail-fiber-name').value = w.fiber?.name||'';
+    document.getElementById('detail-fiber-cost').value = w.fiber?.cost||'';
+    document.getElementById('detail-fiber-weight').value = w.fiber?.weight||'';
+    document.getElementById('detail-status').value = w.status||0;
+    document.getElementById('detail-progress').value = w.progress||0;
+    document.getElementById('detail-start').value = w.start||'';
+    document.getElementById('detail-finish').value = w.finish||'';
+    document.getElementById('detail-needle').value = w.needle||'';
+    document.getElementById('detail-density-x').value = w.density?.x||'';
+    document.getElementById('detail-density-y').value = w.density?.y||'';
+    document.getElementById('detail-remark').value = w.remark||'';
+    document.getElementById('detail-tags').value = (w.tags||[]).join(', ');
+    
+    // 页面显示
+    document.getElementById('work-list-page').classList.add('hidden');
+    document.getElementById('work-detail-page').classList.remove('hidden');
+    document.querySelector('.back-btn').classList.remove('hidden');
+    document.getElementById('header-title').innerText = isViewMode ? '查看作品' : '编辑作品';
+    
+    // 切换表单状态
+    if(isViewMode){
+        disableFormInputs();
+        document.getElementById('export-pdf-btn').classList.remove('hidden');
+    } else {
+        enableFormInputs();
+        document.getElementById('export-pdf-btn').classList.add('hidden');
+    }
+    toggleFileInputVisibility();
+}
+
+/* ==================== 图片处理 ==================== */
+// 预览图片并保存 Base64 数据
+function previewImg(event, targetId){
+    const file = event.target.files[0];
+    if(!file) return;
+    
+    // 限制文件大小（如需）
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if(file.size > maxSize){
+        alert('图片过大，请压缩后再上传（建议不超过5MB）。');
+        event.target.value = '';
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e){
+        currentImageData = e.target.result; // 保存 Base64 数据
+        const img = document.getElementById(targetId);
+        img.src = currentImageData;
+        img.style.display = 'block';
+        document.getElementById('delete-img-btn').style.display = 'block';
+        toggleFileInputVisibility();
+    };
+    reader.readAsDataURL(file);
+}
+
+// 重置图片预览
+function resetImagePreview(){
+    const img = document.getElementById('detail-img');
+    img.src = '';
+    img.style.display = 'none';
+    document.getElementById('delete-img-btn').style.display = 'none';
+    currentImageData = '';
+    const fileInput = document.querySelector('#file-input-container input[type="file"]');
+    if(fileInput) fileInput.value = '';
+}
+
+// 删除图片
+function deleteImage(){
+    resetImagePreview();
+    toggleFileInputVisibility();
+}
+
+/* ==================== 保存作品 ==================== */
+document.getElementById('work-form').onsubmit = function(e){
+    e.preventDefault();
+    if (isViewMode) return;
+    
+    const data = {
+        id: currentWorkId || Date.now(),
+        img: currentImageData || '',
+        name: document.getElementById('detail-name').value,
+        time: parseFloat(document.getElementById('detail-time').value)||0,
+        fiber: {
+            name: document.getElementById('detail-fiber-name').value,
+            weight: parseFloat(document.getElementById('detail-fiber-weight').value)||0,
+            cost: parseFloat(document.getElementById('detail-fiber-cost').value)||0
+        },
+        status: parseInt(document.getElementById('detail-status').value)||0,
+        progress: parseFloat(document.getElementById('detail-progress').value)||0,
+        start: document.getElementById('detail-start').value,
+        finish: document.getElementById('detail-finish').value,
+        needle: document.getElementById('detail-needle').value,
+        density: {
+            x: parseFloat(document.getElementById('detail-density-x').value)||0,
+            y: parseFloat(document.getElementById('detail-density-y').value)||0
+        },
+        remark: document.getElementById('detail-remark').value,
+        tags: document.getElementById('detail-tags').value.split(',').map(t=>t.trim()).filter(t=>t)
+    };
+    
+    // 保存或更新
+    if(currentWorkId){
+        const idx = works.findIndex(x=>x.id===currentWorkId);
+        if(idx>-1) works[idx]=data;
+    } else {
+        works.push(data);
+    }
+    localStorage.setItem('works',JSON.stringify(works));
+    goBack();
+    renderWorks();
+};
+
+/* ==================== 状态联动 ==================== */
+function syncStatusAndProgress() {
+    const statusEl = document.getElementById('detail-status');
+    const progressEl = document.getElementById('detail-progress');
+    
+    statusEl.addEventListener('change', function() {
+        const status = parseInt(this.value);
+        if (status === 100) progressEl.value = 100;
+        else if (status === 0) progressEl.value = 0;
+        else if (status === 50) {
+            if (parseInt(progressEl.value) <= 0) progressEl.value = 1;
+            if (parseInt(progressEl.value) >= 100) progressEl.value = 99;
+        }
+    });
+    
+    progressEl.addEventListener('input', function() {
+        const progress = parseInt(this.value);
+        if (progress >= 100) { statusEl.value = 100; this.value = 100; }
+        else if (progress <= 0) { statusEl.value = 0; this.value = 0; }
+        else statusEl.value = 50;
+    });
+}
+
+/* ==================== 导出 PDF ==================== */
+function exportPDF(){
+    const element = document.getElementById('work-detail-page');
+    const name = document.getElementById('detail-name').value || '作品详情';
+    const opt = {
+        margin:       10,
+        filename:     `${name}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    const clone = element.cloneNode(true);
+    const exportBtn = clone.querySelector('#export-pdf-btn');
+    if(exportBtn) exportBtn.style.display = 'none';
+    const backBtn = clone.querySelector('.back-btn');
+    if(backBtn) backBtn.style.display = 'none';
+    html2pdf().set(opt).from(clone).save();
+}
+
+/* ==================== 导出 Excel ==================== */
+function exportWorksExcel() {
+    const keyword = document.getElementById('search-input').value.toLowerCase();
+    const statusFilter = document.getElementById('status-filter').value;
+    const tagFilter = document.getElementById('tag-filter').value;
+    
+    const filtered = works.filter(w=>{
+        const matchesKeyword = w.name?.toLowerCase()?.includes(keyword);
+        const matchesStatus = statusFilter==='all' || String(w.status)===statusFilter;
+        const matchesTag = tagFilter==='all' || (w.tags && w.tags.includes(tagFilter));
+        return matchesKeyword && matchesStatus && matchesTag;
+    });
+    
+    const data = filtered.map(w=>({
+        '名称': w.name || '',
+        '状态': (function(){ const map = {0:'未开始', 50:'进行中', 100:'已完成'}; return map[w.status] || ''; })(),
+        '投入时间（天）': w.time || 0
+    }));
+    
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "作品列表");
+    
+    const date = new Date().toISOString().slice(0,10).replace(/-/g,'');
+    const filename = `织女作品列表_${date}.xlsx`;
+    XLSX.writeFile(wb, filename);
+}
+
+/* ==================== 小样密度计算 ==================== */
+function calcDensity(){
+    const w = parseFloat(document.getElementById('sample-width').value);
+    const h = parseFloat(document.getElementById('sample-height').value);
+    const stitches = parseFloat(document.getElementById('sample-stitches').value);
+    const rows = parseFloat(document.getElementById('sample-rows').value);
+    if(!stitches || !rows) { alert('请填写小样针数和行数'); return; }
+    
+    const densityX = (stitches / w).toFixed(2);
+    const densityY = (rows / h).toFixed(2);
+    
+    document.getElementById('result-density-x').innerText = densityX;
+    document.getElementById('result-density-y').innerText = densityY;
+    
+    const targetW = parseFloat(document.getElementById('target-width').value);
+    const targetH = parseFloat(document.getElementById('target-height').value);
+    
+    if(targetW && targetH){
+        const needStitches = Math.round(targetW * densityX);
+        const needRows = Math.round(targetH * densityY);
+        document.getElementById('result-stitches').innerText = needStitches;
+        document.getElementById('result-rows').innerText = needRows;
+    } else {
+        document.getElementById('result-stitches').innerText = '—';
+        document.getElementById('result-rows').innerText = '—';
+    }
+    document.getElementById('result-card').style.display = 'block';
+}
+
+/* ==================== 初始化 ==================== */
+document.getElementById('search-input').oninput = renderWorks;
+document.getElementById('status-filter').onchange = renderWorks;
+document.getElementById('tag-filter').onchange = renderWorks;
+renderWorks();
+syncStatusAndProgress();
+</script>
+</body>
+</html>
