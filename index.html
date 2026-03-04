@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <title>织女生活</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<!-- 苹果浏览器适配 -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -14,7 +16,7 @@
 <div class="main">
     <!-- 作品列表页 -->
     <div id="work-list-page">
-        <!-- 统计数据大卡片 -->
+        <!-- 统计数据卡片 -->
         <div class="card" id="stats-card">
             <div class="stat-row">
                 <div class="stat-item"><div class="label">作品数量(个)</div><div class="value" id="stat-count">0</div></div>
@@ -23,6 +25,7 @@
                 <div class="stat-item"><div class="label">已完成(个)</div><div class="value" id="stat-done">0</div></div>
             </div>
         </div>
+
         <!-- 顶部控制栏 -->
         <div id="control-bar">
             <input type="text" id="search-input" placeholder="搜索作品名称...">
@@ -41,9 +44,11 @@
             <button id="add-btn" class="control-btn" onclick="addWork()">+ 添加作品</button>
             <button id="export-excel-btn" class="control-btn" onclick="exportWorksExcel()">导出Excel</button>
         </div>
+
         <!-- 网格容器 -->
         <div id="work-grid"></div>
     </div>
+
     <!-- 作品详情/编辑页 -->
     <div id="work-detail-page" class="hidden">
         <form id="work-form">
@@ -103,6 +108,7 @@
             <input type="submit" value="保存">
         </form>
     </div>
+
     <!-- 工具页 -->
     <div id="tool-page" class="hidden">
         <div class="card"><h3>小样密度计算工具</h3>
@@ -132,20 +138,22 @@
         </div>
     </div>
 </div>
+
 <div class="tab-bar">
     <button class="active" onclick="switchTab('work')">作品</button>
     <button onclick="switchTab('tool')">工具</button>
 </div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-/* ==================== 数据存储 ==================== */
+// ==================== 数据存储 ====================
 let works = JSON.parse(localStorage.getItem('works')||'[]');
 let currentWorkId = null;
 let isViewMode = false; // 是否为查看模式（只读）
 let currentImageData = ''; // 全局变量存储当前图片的 Base64 数据
 
-/* ==================== 页面切换 ==================== */
+// ==================== 页面切换 ====================
 function switchTab(tab){
     document.querySelectorAll('.tab-bar button').forEach(btn=>btn.classList.remove('active'));
     if(tab==='work'){
@@ -163,7 +171,7 @@ function switchTab(tab){
     document.querySelector('.back-btn').classList.add('hidden');
 }
 
-/* ==================== 返回按钮 ==================== */
+// ==================== 返回按钮 ====================
 function goBack(){
     document.getElementById('work-detail-page').classList.add('hidden');
     document.getElementById('work-list-page').classList.remove('hidden');
@@ -171,7 +179,7 @@ function goBack(){
     document.getElementById('header-title').innerText='织女的一天';
 }
 
-/* ==================== 表单状态控制 ==================== */
+// ==================== 表单状态控制 ====================
 // 禁用所有输入（只读模式）
 function disableFormInputs(){
     const inputs = document.querySelectorAll('#work-form input, #work-form select, #work-form textarea');
@@ -197,7 +205,7 @@ function toggleFileInputVisibility(){
     }
 }
 
-/* ==================== 作品列表 ==================== */
+// ==================== 作品列表 ====================
 function renderWorks(){
     const container = document.getElementById('work-grid');
     container.innerHTML = '';
@@ -215,13 +223,9 @@ function renderWorks(){
     });
 
     // ==================== 排序逻辑 ====================
-    // 获取排序方式
     const sortMode = document.getElementById('sort-filter').value;
-
-    // 根据选择的排序方式对 filtered 数组进行排序
     if(sortMode === 'start-asc'){
         filtered.sort((a, b) => {
-            // 将未设置开始时间的作品放在最后
             if(!a.start) return 1;
             if(!b.start) return -1;
             return new Date(a.start) - new Date(b.start);
@@ -244,7 +248,6 @@ function renderWorks(){
     document.getElementById('stat-done').innerText = completed;
     document.getElementById('sort-filter').onchange = renderWorks;
 
-    
     // 渲染卡片
     filtered.forEach(w=>{
         const card = document.createElement('div');
@@ -259,7 +262,7 @@ function renderWorks(){
             img.alt = '作品图';
             imgWrapper.appendChild(img);
         } else {
-           imgWrapper.classList.add('no-image'); 
+            imgWrapper.classList.add('no-image'); 
             imgWrapper.innerText = '暂无图片';
         }
         
@@ -301,7 +304,7 @@ function renderWorks(){
     });
 }
 
-/* ==================== 删除作品 ==================== */
+// ==================== 删除作品 ====================
 function confirmDelete(id){
     if(confirm('确定要删除此作品吗？此操作不可恢复。')){
         works = works.filter(w=>w.id!==id);
@@ -310,7 +313,7 @@ function confirmDelete(id){
     }
 }
 
-/* ==================== 添加作品 ==================== */
+// ==================== 添加作品 ====================
 function addWork(){
     currentWorkId = null;
     isViewMode = false;
@@ -325,7 +328,7 @@ function addWork(){
     document.getElementById('detail-created').value = new Date().toISOString().split('T')[0];
 }
 
-/* ==================== 查看/编辑作品 ==================== */
+// ==================== 查看/编辑作品 ====================
 function viewWork(id){
     isViewMode = true;
     openDetail(id);
@@ -382,7 +385,7 @@ function openDetail(id){
     toggleFileInputVisibility();
 }
 
-/* ==================== 图片处理 ==================== */
+// ==================== 图片处理 ====================
 // 预览图片并保存 Base64 数据
 function previewImg(event, targetId){
     const file = event.target.files[0];
@@ -425,7 +428,7 @@ function deleteImage(){
     toggleFileInputVisibility();
 }
 
-/* ==================== 保存作品 ==================== */
+// ==================== 保存作品 ====================
 document.getElementById('work-form').onsubmit = function(e){
     e.preventDefault();
     if (isViewMode) return;
@@ -465,7 +468,7 @@ document.getElementById('work-form').onsubmit = function(e){
     renderWorks();
 };
 
-/* ==================== 状态联动 ==================== */
+// ==================== 状态联动 ====================
 function syncStatusAndProgress() {
     const statusEl = document.getElementById('detail-status');
     const progressEl = document.getElementById('detail-progress');
@@ -488,7 +491,7 @@ function syncStatusAndProgress() {
     });
 }
 
-/* ==================== 导出 PDF ==================== */
+// ==================== 导出 PDF ====================
 function exportPDF(){
     const element = document.getElementById('work-detail-page');
     const name = document.getElementById('detail-name').value || '作品详情';
@@ -507,7 +510,7 @@ function exportPDF(){
     html2pdf().set(opt).from(clone).save();
 }
 
-/* ==================== 导出 Excel ==================== */
+// ==================== 导出 Excel ====================
 function exportWorksExcel() {
     const keyword = document.getElementById('search-input').value.toLowerCase();
     const statusFilter = document.getElementById('status-filter').value;
@@ -535,7 +538,7 @@ function exportWorksExcel() {
     XLSX.writeFile(wb, filename);
 }
 
-/* ==================== 小样密度计算 ==================== */
+// ==================== 小样密度计算 ====================
 function calcDensity(){
     const w = parseFloat(document.getElementById('sample-width').value);
     const h = parseFloat(document.getElementById('sample-height').value);
