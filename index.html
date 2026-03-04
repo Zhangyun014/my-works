@@ -239,7 +239,7 @@ function renderWorks(){
     }
 
     // 统计数据
-    const totalCost = filtered.reduce((s,w)=>s+parseFloat(w.fiber?.cost||0),0);
+    const totalCost = filtered.reduce((s,w)=>sparseFloat(w.fiber?.cost||0),0);
     const inProgress = filtered.filter(w=>w.status===50).length;
     const completed = filtered.filter(w=>w.status===100).length;
     document.getElementById('stat-count').innerText = filtered.length;
@@ -576,5 +576,6 @@ syncStatusAndProgress();
 </script>
 </body>
 </html>
+
 
 
