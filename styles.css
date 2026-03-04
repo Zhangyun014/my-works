@@ -9,55 +9,39 @@
     --danger: #e57373;
     --progress-bg: #f2f2f2;
 }
-* { box-sizing: border-box; }
+
+/* 通用重置 */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
 body { 
     margin: 0; 
     font-family: -apple-system, BlinkSystemFont, "Helvetica Neue", Helvetica, "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
     background: var(--bg);
     color: var(--text);
     line-height: 1.5;
+    -webkit-overflow-scrolling: touch; /* iOS 惯性滚动 */
 }
 
-/* ==================== 顶部控制栏 ==================== */
+/* 顶部控制栏 */
 #control-bar {
     display: flex;
     gap: 8px;
     margin-bottom: 12px;
-    flex-wrap: nowrap; /* 确保所有元素在一行显示 */
+    flex-wrap: nowrap;
 }
 
-/* 搜索框占比更大 */
-#search-input {
-    flex: 2; /* 占用两份空间 */
-    height: 38px;
-    font-size: 14px;
-}
+/*输入框占比 */
+#search-input { flex: 2; height: 38px; font-size: 14px; }
+.control-select, .control-btn { flex: 1; height: 38px; font-size: 14px; }
 
-/* 筛选框（Select）和按钮（Button）的统一宽度控制 */
-.control-select, .control-btn {
-    flex: 1; /* 三个筛选框宽度一致，两个按钮宽度一致 */
-    height: 38px;
-    font-size: 14px;
-}
-
-/* 按钮样式优化 */
+/* 按钮样式 */
 .control-btn {
     border: none;
     border-radius: 4px;
     color: #fff;
 }
-
-/* 添加作品按钮 */
-#add-btn {
-    background: var(--accent);
-}
-
-/* 导出Excel按钮 */
-#export-excel-btn {
-    background: #4caf50;
-}
-
-/* ==================== 其余已有样式（未改动） ==================== */
+#add-btn { background: var(--accent); }
+#export-excel-btn { background: #4caf50; }
 
 /* 顶部 */
 header {
@@ -104,11 +88,13 @@ header {
     color: #fff;
 }
 
-/* 主体 */
-.main { padding: 12px 12px 40px 12px; }
-body { padding-bottom: 20px !important; }
+/* 主体内容 */
+.main { 
+    padding: 12px 12px 80px 12px; 
+    min-height: 100vh;
+}
 
-/* ==================== 统计数据大卡片 ==================== */
+/* 统计卡片 */
 #stats-card {
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -122,16 +108,16 @@ body { padding-bottom: 20px !important; }
 .stat-item .label { font-size: 16px; color: var(--text); }
 .stat-item .value { font-size: 28px; font-weight: bold; color: var(--accent); margin-top: 8px; }
 
-/* ==================== 响应式网格布局 ==================== */
+/* 响应式网格 */
 #work-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     gap: 8px;
 }
 @media (max-width: 1024px) { #work-grid { grid-template-columns: repeat(4, 1fr); } }
-@media (max-width: 600px) { #work-grid { grid-template-columns: repeat(2, 1px); } }
+@media (max-width: 600px) { #work-grid { grid-template-columns: repeat(2, 1fr); } }
 
-/* ==================== 卡片样式优化 ==================== */
+/* 卡片 */
 .work-card {
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -143,63 +129,55 @@ body { padding-bottom: 20px !important; }
     gap: 8px;
     position: relative;
 }
-.work-card .info {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-.work-card .info strong { font-size: 16px; }
-.work-card .info small { color: #999; }
-.work-card .progress-bar { height: 4px; background: var(--progress-bg); border-radius: 2px; overflow: hidden; margin: 4px 0; }
-.work-card .progress-bar div { height: 100%; background: var(--primary); }
-.work-card .info .time { font-size: 12px; color: #999; }
 
-/* ==================== 图片区域样式 ==================== */
+/* 图片容器（Safari 兼容） */
 .image-wrapper {
-    width: 100%;                 
-    aspect-ratio: 1 / 1;         
-    background: #fff5f8;         
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: #fff5f8;
     border-radius: 4px;
-    overflow: hidden;            
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;          
+    position: relative;
+    /* 旧版 Safari 兜底方案 */
+    padding-bottom: 100%;
+    height: 0;
 }
 .image-wrapper img {
+    position: absolute;
     width: 100%;
     height: 100%;
-    object-fit: cover;          
+    object-fit: cover;
 }
 .image-wrapper.no-image::after {
     content: '暂无图片';         
     color: #ff9aa2;
     font-size: 14px;
-    position: absolute;
 }
 
-/* ==================== 按钮组 ==================== */
+/* 按钮组 */
 .button-row { display: flex; gap: 4px; margin-top: 4px; }
 .button-row button { flex: 1; font-size: 12px; padding: 4px; height: auto; }
 .button-row .edit-btn { background: var(--primary); }
 .button-row .delete-btn { background: var(--danger); }
 
-/* ==================== 通用表单样式 ==================== */
+/* 通用表单 */
 button, input[type="button"], input[type="submit"] { background: var(--accent); color: #fff; border: none; padding: 8px 12px; border-radius: 4px; font-size: 14px; }
 input, select, textarea { width: 100%; padding: 6px; margin: 4px 0 8px 0; border: 1px solid var(--border); border-radius: 4px; }
 textarea { resize: vertical; overflow: auto; }
-#detail-remark {
-    height: 100px;
-    resize: vertical;
-    overflow-y: auto;
-}
+#detail-remark { height: 100px; resize: vertical; overflow-y: auto; }
+
+/* 卡片内图片 */
 .card img { width: 20%; height: auto; }
 .card { margin: 10px; padding: 15px; border-radius: 8px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 .card h3 { margin-top: 0; color: #333; }
 .progress-bar { width: 100%; background: var(--secondary); height: 8px; border-radius: 4px; overflow: hidden; margin-top: 4px; }
 .progress-bar div { height: 100%; background: var(--accent); width: 0%; }
 .hidden { display: none; }
+
+/* 导出按钮 */
 #export-pdf-btn {
     background: #4caf50;
     margin-bottom: 8px;
@@ -209,8 +187,10 @@ textarea { resize: vertical; overflow: auto; }
     font-size: 14px;
     display: inline-block;
 }
-#export-btn-container {
-    margin-bottom: 8px;
-    text-align: left;
-}
 #export-pdf-btn.hidden { display: none; }
+
+/* 表单统一状态 (iOS 表单重置) */
+input, select, textarea, button {
+    -webkit-appearance: none;
+    border-radius: 4px;
+}
