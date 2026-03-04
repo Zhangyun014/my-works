@@ -19,7 +19,7 @@
         <!-- 统计数据卡片 -->
         <div class="card" id="stats-card">
             <div class="stat-row">
-                <div class="stat-item"><div class="label">作品数量(个)</div><div class="value" id="stat-count">0</div></div>
+                <div class="stat-item"><div class="label">作品(个)</div><div class="value" id="stat-count">0</div></div>
                 <div class="stat-item"><div class="label">总成本(元)</div><div class="value" id="stat-cost">0.00</div></div>
                 <div class="stat-item"><div class="label">进行中(个)</div><div class="value" id="stat-progress">0</div></div>
                 <div class="stat-item"><div class="label">已完成(个)</div><div class="value" id="stat-done">0</div></div>
@@ -41,7 +41,7 @@
                 <option value="start-asc">开始时间 ↑</option>
                 <option value="start-desc">开始时间 ↓</option>
             </select>
-            <button id="add-btn" class="control-btn" onclick="addWork()">+</button>
+            <button id="add-btn" class="control-btn" onclick="addWork()">添加</button>
             <button id="export-excel-btn" class="control-btn" onclick="exportWorksExcel()">导出</button>
         </div>
 
@@ -576,4 +576,5 @@ syncStatusAndProgress();
 </script>
 </body>
 </html>
+
 
